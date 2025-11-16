@@ -15,6 +15,9 @@ public class IslandHeightmapGenerator : MonoBehaviour
     public float falloffStrength = 3f;      // Higher = smaller island, stronger edges
     public float falloffPower = 2f;         // Controls softness of the falloff curve
 
+    [Header("Island Shape Generator")]
+    public IslandShapeGenerator shape = new IslandShapeGenerator();
+
     [Header("Height Controls")]
     public float heightMultiplier = 1f;     // Overall height scale
     public float peakSharpness = 1.5f;      // Higher = pointier mountains
@@ -58,19 +61,26 @@ public class IslandHeightmapGenerator : MonoBehaviour
                 noiseValue = Mathf.InverseLerp(-1f, 1f, noiseValue);   // normalize
 
                 // 2. Island radial falloff
-                float fx = (float)x / resolution * 2f - 1f;
-                float fy = (float)y / resolution * 2f - 1f;
+                // float fx = (float)x / resolution * 2f - 1f;
+                // float fy = (float)y / resolution * 2f - 1f;
 
-                float distance = Mathf.Sqrt(fx * fx + fy * fy);
-                float falloff = Mathf.Pow(Mathf.Clamp01(distance), falloffPower);
+                // float distance = Mathf.Sqrt(fx * fx + fy * fy);
+                // float falloff = Mathf.Pow(Mathf.Clamp01(distance), falloffPower);
 
-                float islandMask = Mathf.Clamp01(1f - falloff * falloffStrength);
+                // float islandMask = Mathf.Clamp01(1f - falloff * falloffStrength);
+
+                // Use IslandShapeGenerator to generate island shape mask
+                float nx = (float)x / (resolution - 1) * 2f - 1f;  // normalize to -1..1
+                float ny = (float)y / (resolution - 1) * 2f - 1f;
+
+                float shapeMask = Mathf.Clamp01(shape.GetMask(nx, ny));
 
                 // 3. Peak sharpness
                 float shaped = Mathf.Pow(noiseValue, peakSharpness);
 
                 // 4. Combine height components
-                float finalHeight = shaped * islandMask * heightMultiplier + baseElevation;
+                float finalHeight = shaped * shapeMask * heightMultiplier + baseElevation;
+                // float finalHeight = shaped * islandMask * heightMultiplier + baseElevation;
 
                 map[x, y] = Mathf.Clamp01(finalHeight);
             }
