@@ -12,4 +12,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2a18d946b8e34777835b050b8201474, type: 3}
   m_Name: BiomeDB
   m_EditorClassIdentifier: 
-  biomes: []
+  biomes:
+  - type: 0
+    biomeName: 
+    minHeight: 0.1
+    maxHeight: 0.6
+    minMoisture: 0.4
+    maxMoisture: 1
+    lowColor: {r: 0.30588236, g: 0.56078434, b: 0.23137255, a: 0}
+    midColor: {r: 0.38431373, g: 0.6862745, b: 0.3019608, a: 0}
+    highColor: {r: 0.65882355, g: 0.827451, b: 0.58431375, a: 0}
+  - type: 1
+    biomeName: 
+    minHeight: 0
+    maxHeight: 0.5
+    minMoisture: 0
+    maxMoisture: 0.3
+    lowColor: {r: 0.7882353, g: 0.6431373, b: 0.36078432, a: 0}
+    midColor: {r: 0.90588236, g: 0.78039217, b: 0.5411765, a: 0}
+    highColor: {r: 1, g: 0.95686275, b: 0.8235294, a: 0}
+  - type: 2
+    biomeName: 
+    minHeight: 0.6
+    maxHeight: 1
+    minMoisture: 0.2
+    maxMoisture: 1
+    lowColor: {r: 0.84705883, g: 0.8666667, b: 0.8980392, a: 0}
+    midColor: {r: 0.9490196, g: 0.9607843, b: 0.9843137, a: 0}
+    highColor: {r: 1, g: 1, b: 1, a: 0}
+  - type: 3
+    biomeName: 
+    minHeight: 0.1
+    maxHeight: 0.7
+    minMoisture: 0.6
+    maxMoisture: 1
+    lowColor: {r: 0, g: 0.5019608, b: 0.3764706, a: 0}
+    midColor: {r: 0, g: 0.627451, b: 0.5019608, a: 0}
+    highColor: {r: 0, g: 0, b: 0, a: 0}

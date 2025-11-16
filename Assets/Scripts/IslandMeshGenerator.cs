@@ -50,7 +50,10 @@ public class IslandMeshGenerator : MonoBehaviour
 
     public void GenerateIsland()
     {
-        float[,] heightmap = heightmapGenerator.GenerateHeightmap();
+        // float[,] heightmap = heightmapGenerator.GenerateHeightmap();
+        HeightmapData data = heightmapGenerator.GenerateHeightmap();
+        float[,] heightmap = data.height;
+
         BuildMeshFromHeightmap(heightmap);
     }
 

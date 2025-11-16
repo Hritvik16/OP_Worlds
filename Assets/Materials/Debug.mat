@@ -18,7 +18,8 @@ Material:
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
-  disabledShaderPasses: []
+  disabledShaderPasses:
+  - MOTIONVECTORS
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -83,6 +84,8 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _AlphaToMask: 0
+    - _BeachBlendSharpness: 2
+    - _BeachWidth: 0.2
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BlendOp: 0
@@ -100,7 +103,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _HeightMax: 15.9
+    - _HeightMax: 15
     - _HeightMin: 0
     - _Metallic: 0
     - _Mode: 0
@@ -118,10 +121,13 @@ Material:
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _UVSec: 0
+    - _WaterBlendSharpness: 2
+    - _WaterLevel: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BeachColor: {r: 0.8980392, g: 0.8235294, b: 0.6235294, a: 0}
     - _CliffColor: {r: 0.5450981, g: 0.3529412, b: 0.1686275, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
@@ -130,7 +136,9 @@ Material:
     - _MidColor: {r: 0.2980392, g: 0.6862745, b: 0.3137255, a: 0}
     - _PeakColor: {r: 0.8396226, g: 0.81189924, b: 0.81189924, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+    - _WaterColor: {r: 0.2588235, g: 0.4313726, b: 1, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!114 &3996199082432071092
 MonoBehaviour:
   m_ObjectHideFlags: 11

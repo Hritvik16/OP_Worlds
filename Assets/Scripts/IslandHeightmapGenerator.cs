@@ -1,5 +1,12 @@
 using UnityEngine;
 
+public struct HeightmapData
+{
+    public float[,] height;
+    public float[,] beach;
+    public float[,] cliff;
+}
+
 public class IslandHeightmapGenerator : MonoBehaviour
 {
     [Header("Heightmap Settings")]
@@ -11,10 +18,6 @@ public class IslandHeightmapGenerator : MonoBehaviour
     public float persistence = 0.5f;        // Amplitude multiplier per octave
     public float lacunarity = 2.0f;         // Frequency multiplier per octave
 
-    [Header("Island Shape Controls")]
-    public float falloffStrength = 3f;      // Higher = smaller island, stronger edges
-    public float falloffPower = 2f;         // Controls softness of the falloff curve
-
     [Header("Island Shape Generator")]
     public IslandShapeGenerator shape = new IslandShapeGenerator();
 
@@ -23,13 +26,22 @@ public class IslandHeightmapGenerator : MonoBehaviour
     public float peakSharpness = 1.5f;      // Higher = pointier mountains
     public float baseElevation = 0f;        // Lifts or lowers entire island
 
+    [Header("Shoreline Settings")]
+    public float waterLevel = 0.25f;           // Where the ocean surface is
+    public float beachWidth = 0.05f;           // Width of beach transition zone (0–1)
+    public float cliffSlopeThreshold = 0.75f;  // Slope needed to trigger cliff mask
+
     [Header("Debug")]
     public bool autoGenerate = true;
-    public Texture2D debugPreview;          // Shows heightmap as a texture
+    public Texture2D debugPreview;             // Shows heightmap as a texture
 
-    public float[,] GenerateHeightmap(int seed = 0)
+
+    // UPDATED: returns multiple maps (height, beach, cliff)
+    public HeightmapData GenerateHeightmap(int seed = 0)
     {
-        float[,] map = new float[resolution, resolution];
+        float[,] heightMap = new float[resolution, resolution];
+        float[,] beachMap = new float[resolution, resolution];
+        float[,] cliffMap = new float[resolution, resolution];
 
         // Seed randomness for different islands
         Random.InitState(seed);
@@ -41,7 +53,9 @@ public class IslandHeightmapGenerator : MonoBehaviour
         {
             for (int x = 0; x < resolution; x++)
             {
-                // 1. Base layered noise
+                // -------------------------
+                // 1. Base Layered Noise
+                // -------------------------
                 float noiseValue = 0f;
                 float amplitude = 1f;
                 float frequency = 1f;
@@ -58,41 +72,75 @@ public class IslandHeightmapGenerator : MonoBehaviour
                     frequency *= lacunarity;
                 }
 
-                noiseValue = Mathf.InverseLerp(-1f, 1f, noiseValue);   // normalize
+                noiseValue = Mathf.InverseLerp(-1f, 1f, noiseValue);   // normalize to 0–1
 
-                // 2. Island radial falloff
-                // float fx = (float)x / resolution * 2f - 1f;
-                // float fy = (float)y / resolution * 2f - 1f;
 
-                // float distance = Mathf.Sqrt(fx * fx + fy * fy);
-                // float falloff = Mathf.Pow(Mathf.Clamp01(distance), falloffPower);
-
-                // float islandMask = Mathf.Clamp01(1f - falloff * falloffStrength);
-
-                // Use IslandShapeGenerator to generate island shape mask
+                // -------------------------
+                // 2. Island Shape Mask
+                // -------------------------
                 float nx = (float)x / (resolution - 1) * 2f - 1f;  // normalize to -1..1
                 float ny = (float)y / (resolution - 1) * 2f - 1f;
 
                 float shapeMask = Mathf.Clamp01(shape.GetMask(nx, ny));
 
-                // 3. Peak sharpness
+
+                // -------------------------
+                // 3. Peak Sharpness
+                // -------------------------
                 float shaped = Mathf.Pow(noiseValue, peakSharpness);
 
-                // 4. Combine height components
-                float finalHeight = shaped * shapeMask * heightMultiplier + baseElevation;
-                // float finalHeight = shaped * islandMask * heightMultiplier + baseElevation;
 
-                map[x, y] = Mathf.Clamp01(finalHeight);
+                // -------------------------
+                // 4. Final Height
+                // -------------------------
+                float finalHeight = shaped * shapeMask * heightMultiplier + baseElevation;
+                finalHeight = Mathf.Clamp01(finalHeight);
+
+                heightMap[x, y] = finalHeight;
+
+
+                // -------------------------
+                // 5. Beach Mask
+                // -------------------------
+                // How close the height is to water level (0 = underwater)
+                float waterDist = Mathf.Clamp01((finalHeight - waterLevel) / beachWidth);
+                float beachMask = 1f - waterDist; // 1 near shore
+
+                beachMap[x, y] = beachMask;
+
+
+                // -------------------------
+                // 6. Cliff Mask (Slope-Based)
+                // -------------------------
+                float heightL = (x > 0) ? heightMap[x - 1, y] : finalHeight;
+                float heightR = (x < resolution - 1) ? heightMap[x + 1, y] : finalHeight;
+                float heightD = (y > 0) ? heightMap[x, y - 1] : finalHeight;
+                float heightU = (y < resolution - 1) ? heightMap[x, y + 1] : finalHeight;
+
+                float dx = heightR - heightL;
+                float dy = heightU - heightD;
+                float slope = Mathf.Sqrt(dx * dx + dy * dy);
+
+                float cliffMask = Mathf.InverseLerp(cliffSlopeThreshold, 1f, slope);
+                cliffMap[x, y] = cliffMask;
             }
         }
 
-        return map;
+        return new HeightmapData()
+        {
+            height = heightMap,
+            beach = beachMap,
+            cliff = cliffMap
+        };
     }
 
+
+    // -------------------------
     // Editor Preview Generator
+    // -------------------------
     public void GeneratePreview()
     {
-        float[,] map = GenerateHeightmap();
+        HeightmapData data = GenerateHeightmap();
 
         debugPreview = new Texture2D(resolution, resolution);
 
@@ -100,7 +148,7 @@ public class IslandHeightmapGenerator : MonoBehaviour
         {
             for (int x = 0; x < resolution; x++)
             {
-                float v = map[x, y];
+                float v = data.height[x, y];
                 debugPreview.SetPixel(x, y, new Color(v, v, v));
             }
         }
@@ -108,6 +156,10 @@ public class IslandHeightmapGenerator : MonoBehaviour
         debugPreview.Apply();
     }
 
+
+    // -------------------------
+    // Auto-Regenerate in Editor
+    // -------------------------
     private void OnValidate()
     {
         if (autoGenerate)
@@ -120,6 +172,5 @@ public class IslandHeightmapGenerator : MonoBehaviour
                     meshGen.GenerateIsland();
             }
         }
-            
     }
 }
